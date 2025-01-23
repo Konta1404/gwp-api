@@ -1,0 +1,155 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                   Int            @id @default(autoincrement())
+  name                 String         @db.VarChar(50)
+  email                String         @unique
+  role                 Role           @default(Admin)
+  bio                  String?
+  expertise            String?
+  contactInfo          String?
+  createdAt            DateTime       @default(now())
+  password             String         @db.VarChar(255)
+  updatedAt            DateTime       @updatedAt
+  active               Boolean        @default(true)
+  passwordChangedAt    DateTime?
+  resetPasswordExpires DateTime?
+  resetPasswordToken   String?
+  registrations        Registration[]
+  staffProfile         Staff?
+  tokens               Token[]
+}
+
+model Token {
+  id         Int       @id @default(autoincrement())
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  type       TokenType
+  emailToken String?   @unique
+  valid      Boolean   @default(true)
+  expiration DateTime
+  userId     Int
+  user       User      @relation(fields: [userId], references: [id])
+}
+
+model Event {
+  id                 Int                @id @default(autoincrement())
+  name               String
+  category           EventCategory
+  startTime          DateTime
+  endTime            DateTime
+  status             EventStatus
+  registrationStatus RegistrationStatus
+  capacity           Int?
+  locationDetails    String?
+  price              Float?
+  isPriceHidden      Boolean            @default(true)
+  requiredEquipment  String?
+  ageRestriction     Int?
+  media              Media[]
+  registrations      Registration[]
+  testimonials       Testimonial[]
+}
+
+model Registration {
+  id        Int                @id @default(autoincrement())
+  eventId   Int
+  userId    Int
+  status    RegistrationStatus
+  createdAt DateTime           @default(now())
+  event     Event              @relation(fields: [eventId], references: [id])
+  user      User               @relation(fields: [userId], references: [id])
+}
+
+model Media {
+  id           Int           @id @default(autoincrement())
+  filePath     String
+  category     MediaCategory
+  uploadedAt   DateTime      @default(now())
+  relatedEvent Int?
+  event        Event?        @relation(fields: [relatedEvent], references: [id])
+}
+
+model Testimonial {
+  id         Int      @id @default(autoincrement())
+  authorName String?
+  programId  Int?
+  rating     Int      @default(1)
+  content    String
+  isFeatured Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  event      Event?   @relation(fields: [programId], references: [id])
+}
+
+model Staff {
+  id             Int     @id @default(autoincrement())
+  userId         Int     @unique
+  certifications String?
+  achievements   String?
+  linkedPrograms String?
+  hierarchyLevel String?
+  isFeatured     Boolean @default(false)
+  user           User    @relation(fields: [userId], references: [id])
+}
+
+model SEO {
+  id              Int      @id @default(autoincrement())
+  pageUrl         String   @unique
+  metaTitle       String?
+  metaDescription String?
+  sitemapPriority Float?
+  createdAt       DateTime @default(now())
+}
+
+model Analytics {
+  id             Int      @id @default(autoincrement())
+  pageUrl        String
+  visitsCount    Int      @default(0)
+  popularContent String?
+  updatedAt      DateTime @updatedAt
+}
+
+enum TokenType {
+  EMAIL
+  API
+}
+
+enum Role {
+  Participant
+  Parent
+  Trainer
+  Admin
+  SuperAdmin
+}
+
+enum EventCategory {
+  Mens
+  Womens
+  Team
+  Individual
+}
+
+enum EventStatus {
+  Upcoming
+  Ongoing
+  Completed
+}
+
+enum RegistrationStatus {
+  Open
+  Closed
+  Waitlist
+}
+
+enum MediaCategory {
+  Event
+  Training
+  Competition
+}
