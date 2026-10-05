@@ -1,7 +1,3 @@
-import { Request, Response, NextFunction } from "express";
-
-export = (fn: any) => {
-    return (req: Request, res: Response, next: NextFunction) => {
-        fn(req, res, next).catch(next);
-    };
-};
+import { Request, Response, NextFunction, RequestHandler } from 'express';
+export = (fn: (req: Request, res: Response, next: NextFunction) => Promise<unknown>): RequestHandler =>
+  (req, res, next) => { Promise.resolve(fn(req, res, next)).catch(next); };

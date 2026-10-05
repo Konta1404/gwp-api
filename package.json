@@ -9,10 +9,11 @@
     "start": "node dist/server.js",
     "lint": "eslint . --ext .ts",
     "format": "prettier --write .",
-    "seed": "ts-node prisma/seed.ts"
+    "seed": "ts-node prisma/seed.ts",
+    "test": "jest --runInBand",
+    "prisma:generate": "prisma generate"
   },
   "dependencies": {
-    "bcrypt": "^5.1.1",
     "bcryptjs": "^2.4.3",
     "config": "^3.3.12",
     "cookie-parser": "^1.4.7",
@@ -30,10 +31,10 @@
     "prisma": "^6.2.1",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
-    "zod": "^3.24.1"
+    "zod": "^3.24.1",
+    "@prisma/client": "^6.2.1"
   },
   "devDependencies": {
-    "@prisma/client": "^6.2.1",
     "@types/bcrypt": "^5.0.2",
     "@types/bcryptjs": "^2.4.6",
     "@types/body-parser": "^1.19.5",

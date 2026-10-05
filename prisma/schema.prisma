@@ -11,7 +11,7 @@ model User {
   id                   Int            @id @default(autoincrement())
   name                 String         @db.VarChar(50)
   email                String         @unique
-  role                 Role           @default(Admin)
+  role                 Role           @default(Participant)
   bio                  String?
   expertise            String?
   contactInfo          String?

@@ -1,19 +1,12 @@
-import express, { Application } from 'express';
-import cors from 'cors';import authRouter from './routes/auth.router';
+import express from 'express';
+import cors from 'cors';
+import rateLimit from 'express-rate-limit';
+import authRouter from './routes/auth.router';
 import errorHandler from './middleware/errorHandler';
-
-const app: Application = express();
-
-// Middleware
-app.use(cors());
-app.use(express.json());
-
-app.use(express.json());
-
-// Routes
-app.use('/api/auth', authRouter);
-
-// Global error handler
+const app = express();
+app.disable('x-powered-by');
+app.use(cors({ origin: process.env.FRONTEND_ORIGIN || 'http://localhost:3000' }));
+app.use(express.json({ limit: '32kb' }));
+app.use('/api/auth', rateLimit({ windowMs: 15 * 60 * 1000, limit: 100, standardHeaders: 'draft-7', legacyHeaders: false }), authRouter);
 app.use(errorHandler);
-
 export default app;

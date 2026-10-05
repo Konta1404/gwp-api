@@ -1,31 +1,20 @@
-import { Request, Response, NextFunction } from "express";
-import jwt from "jsonwebtoken";
-import { PrismaClient } from "@prisma/client";
-import { AppError } from "../lib/appError";
+import { RequestHandler } from 'express';
+import prisma from '../config/prisma';
+import { AppError } from '../lib/appError';
+import { verifyToken } from '../lib/jwt';
 
-const prisma = new PrismaClient();
-
-export const protect = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        const authHeader = req.headers.authorization;
-
-        if (!authHeader || !authHeader.startsWith("Bearer ")) {
-            return next(new AppError("You are not logged in. Please log in to access.", 401));
-        }
-
-        const token = authHeader.split(" ")[1];
-
-        const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { id: number; role: string };
-
-        const user = await prisma.user.findUnique({ where: { id: decoded.id } });
-
-        if (!user) {
-            return next(new AppError("User not found.", 404));
-        }
-
-        res.locals.user = user;
-        next();
-    } catch (err) {
-        next(new AppError("Invalid or expired token. Please log in again.", 401));
+export const protect: RequestHandler = async (req, res, next) => {
+  const header = req.headers.authorization;
+  if (!header?.startsWith('Bearer ')) { next(new AppError('Sign in required.', 401)); return; }
+  let payload;
+  try { payload = verifyToken(header.slice(7)); }
+  catch { next(new AppError('Invalid or expired token.', 401)); return; }
+  try {
+    const user = await prisma.user.findUnique({ where: { id: payload.id } });
+    if (!user || !user.active || payload.passwordVersion !== (user.passwordChangedAt?.getTime() ?? 0)) {
+      next(new AppError('Sign in again.', 401)); return;
     }
+    res.locals.user = { id: user.id, role: user.role };
+    next();
+  } catch (error) { next(error); }
 };

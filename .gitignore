@@ -11,3 +11,9 @@ yarn-error.log*
 .vscode/*
 .idea
 .DS_Store
+# Local verification outputs
+coverage/
+*.tsbuildinfo
+
+dist/
+.env
